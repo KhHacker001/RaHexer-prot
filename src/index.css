@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-[#050505] text-white selection:bg-white selection:text-black antialiased;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
+  }
+}
+
+@layer components {
+  .prose-custom {
+    @apply prose prose-invert max-w-none;
+    --tw-prose-body: #a1a1aa;
+    --tw-prose-headings: #ffffff;
+    --tw-prose-links: #10b981;
+    --tw-prose-bold: #ffffff;
+    --tw-prose-counters: #71717a;
+    --tw-prose-bullets: #3f3f46;
+    --tw-prose-hr: #27272a;
+    --tw-prose-quotes: #ffffff;
+    --tw-prose-quote-borders: #10b981;
+    --tw-prose-captions: #71717a;
+    --tw-prose-code: #ffffff;
+    --tw-prose-pre-code: #ffffff;
+    --tw-prose-pre-bg: #09090b;
+    --tw-prose-th-borders: #27272a;
+    --tw-prose-td-borders: #18181b;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-black;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-zinc-800 rounded-full hover:bg-zinc-700 transition-all;
+}
