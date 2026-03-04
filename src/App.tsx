@@ -9,11 +9,14 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminCreate from './pages/AdminCreate';
 import AdminEdit from './pages/AdminEdit';
+import { getSupabase } from './lib/supabase';
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   useEffect(() => {
     const trackVisitor = async () => {
       try {
+        const supabase = getSupabase();
         let ip = 'Unknown';
         let country = 'Unknown';
 
@@ -37,16 +40,13 @@ function App() {
           console.warn('Geo fetch failed');
         }
         
-        await fetch('/api/visitors', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ip,
-            country,
-            device: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
-            browser: navigator.userAgent.split(' ').pop(),
-            path: window.location.pathname
-          })
+        await supabase.from('visitors').insert({
+          ip,
+          country,
+          device: /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop',
+          browser: navigator.userAgent.split(' ').pop(),
+          path: window.location.pathname,
+          visitTime: new Date().toISOString()
         });
       } catch (err) {
         // Silent fail for tracking to not disturb user experience
@@ -58,6 +58,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="min-h-screen bg-black text-white font-mono selection:bg-emerald-500 selection:text-black">
         <Header />
         <main className="min-h-screen">

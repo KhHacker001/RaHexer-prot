@@ -1,25 +1,28 @@
 import { useNavigate, Link } from 'react-router-dom';
 import Editor from '../components/Editor';
 import { ArrowLeft } from 'lucide-react';
+import { getSupabase } from '../lib/supabase';
 
 const AdminCreate = () => {
   const navigate = useNavigate();
 
   const handleSave = async (data: any) => {
     try {
-      const res = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+      const supabase = getSupabase();
+      const { error } = await supabase.from('posts').insert({
+        ...data,
+        createdAt: new Date().toISOString(),
+        views: 0
       });
 
-      if (res.ok) {
+      if (!error) {
         navigate('/admin/dashboard');
       } else {
-        alert('Failed to save intelligence report');
+        throw error;
       }
     } catch (err) {
       console.error('Save error:', err);
+      alert('Failed to save intelligence report');
     }
   };
 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Analytics from '../components/Analytics';
-import { Plus, Edit, Trash2, LogOut, FileText, LayoutDashboard, Share2, Check, ExternalLink } from 'lucide-react';
+import { getSupabase } from '../lib/supabase';
+import { Plus, Edit, Trash2, LogOut, FileText, LayoutDashboard, Share2, Check } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState<any>(null);
@@ -13,18 +14,65 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const authRes = await fetch('/api/auth/me');
-        if (!authRes.ok) return navigate('/admin');
+        const supabase = getSupabase();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return navigate('/admin');
 
-        const [analyticsRes, postsRes] = await Promise.all([
-          fetch('/api/analytics'),
-          fetch('/api/posts')
-        ]);
+        const { data: postsData, error: postsError } = await supabase
+          .from('posts')
+          .select('*')
+          .order('createdAt', { ascending: false });
 
-        if (analyticsRes.ok && postsRes.ok) {
-          setAnalytics(await analyticsRes.json());
-          setPosts(await postsRes.json());
+        const { data: visitorsData, error: visitorsError } = await supabase
+          .from('visitors')
+          .select('*');
+
+        if (postsError || visitorsError) throw postsError || visitorsError;
+
+        setPosts(postsData || []);
+
+        // Calculate analytics manually
+        const totalViews = postsData?.reduce((sum, p) => sum + (p.views || 0), 0) || 0;
+        const mostViewed = [...(postsData || [])].sort((a, b) => (b.views || 0) - (a.views || 0))[0];
+        const topPosts = [...(postsData || [])]
+          .sort((a, b) => (b.views || 0) - (a.views || 0))
+          .slice(0, 5)
+          .map(p => ({ name: p.title.substring(0, 20) + (p.title.length > 20 ? '...' : ''), views: p.views || 0 }));
+
+        const dailyStats: Record<string, number> = {};
+        for (let i = 0; i < 30; i++) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          dailyStats[d.toISOString().split('T')[0]] = 0;
         }
+
+        visitorsData?.forEach(v => {
+          const date = v.visitTime?.split('T')[0];
+          if (dailyStats[date] !== undefined) {
+            dailyStats[date]++;
+          }
+        });
+
+        const visitorTrend = Object.entries(dailyStats)
+          .map(([date, count]) => ({ date, count }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        const deviceStats = visitorsData?.reduce((acc: any, v) => {
+          acc[v.device] = (acc[v.device] || 0) + 1;
+          return acc;
+        }, {}) || {};
+
+        setAnalytics({
+          totalPosts: postsData?.length || 0,
+          totalViews,
+          totalVisitors: visitorsData?.length || 0,
+          mostViewed,
+          topPosts,
+          visitorTrend,
+          deviceStats,
+          recentVisitors: visitorsData?.slice(-20).reverse() || []
+        });
+
       } catch (err) {
         console.error('Failed to fetch admin data:', err);
       } finally {
@@ -37,17 +85,18 @@ const AdminDashboard = () => {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this intelligence report?')) return;
     try {
-      const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        setPosts(posts.filter(p => p.id !== id));
-      }
+      const supabase = getSupabase();
+      const { error } = await supabase.from('posts').delete().eq('id', id);
+      if (error) throw error;
+      setPosts(posts.filter(p => p.id !== id));
     } catch (err) {
       alert('Failed to delete report');
     }
   };
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    const supabase = getSupabase();
+    await supabase.auth.signOut();
     navigate('/admin');
   };
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Terminal from '../components/Terminal';
 import PostCard from '../components/PostCard';
 import { Post } from '../lib/db';
+import { getSupabase } from '../lib/supabase';
 import { ArrowRight, Terminal as TerminalIcon, Shield, Zap } from 'lucide-react';
 
 const Home = () => {
@@ -11,9 +12,14 @@ const Home = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch('/api/posts');
-        const data = await res.json();
-        setPosts(data);
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .order('createdAt', { ascending: false });
+        
+        if (error) throw error;
+        setPosts(data || []);
       } catch (err) {
         console.error('Failed to fetch posts:', err);
       } finally {

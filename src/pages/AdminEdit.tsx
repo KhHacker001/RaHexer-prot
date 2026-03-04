@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import Editor from '../components/Editor';
 import { Post } from '../lib/db';
 import { ArrowLeft } from 'lucide-react';
+import { getSupabase } from '../lib/supabase';
 
 const AdminEdit = () => {
   const { id } = useParams();
@@ -13,10 +14,15 @@ const AdminEdit = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const res = await fetch(`/api/posts/${id}`);
-        if (res.ok) {
-          setPost(await res.json());
-        }
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error) throw error;
+        setPost(data);
       } catch (err) {
         console.error('Fetch error:', err);
       } finally {
@@ -28,19 +34,20 @@ const AdminEdit = () => {
 
   const handleSave = async (data: any) => {
     try {
-      const res = await fetch(`/api/posts/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
+      const supabase = getSupabase();
+      const { error } = await supabase
+        .from('posts')
+        .update(data)
+        .eq('id', id);
 
-      if (res.ok) {
+      if (!error) {
         navigate('/admin/dashboard');
       } else {
-        alert('Failed to update intelligence report');
+        throw error;
       }
     } catch (err) {
       console.error('Save error:', err);
+      alert('Failed to update intelligence report');
     }
   };
 

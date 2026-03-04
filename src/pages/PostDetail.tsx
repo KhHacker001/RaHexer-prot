@@ -4,6 +4,7 @@ import { Calendar, Eye, ArrowLeft, Share2, ShieldCheck, Clock, Check } from 'luc
 import ReactMarkdown from 'react-markdown';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Post } from '../lib/db';
+import { getSupabase } from '../lib/supabase';
 
 const PostDetail = () => {
   const { id, slug, tag } = useParams();
@@ -21,12 +22,26 @@ const PostDetail = () => {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const url = slug && tag 
-          ? `/api/posts/slug/${tag}/${slug}` 
-          : `/api/posts/${id}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        setPost(data);
+        const supabase = getSupabase();
+        let query = supabase.from('posts').select('*');
+        
+        if (slug && tag) {
+          query = query.eq('slug', slug).contains('tags', [tag]);
+        } else {
+          query = query.eq('id', id);
+        }
+
+        const { data, error } = await query.single();
+        
+        if (error) throw error;
+        if (data) {
+          setPost(data);
+          // Increment views
+          await supabase
+            .from('posts')
+            .update({ views: (data.views || 0) + 1 })
+            .eq('id', data.id);
+        }
       } catch (err) {
         console.error('Failed to fetch post:', err);
       } finally {

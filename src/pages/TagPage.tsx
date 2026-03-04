@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import PostCard from '../components/PostCard';
 import { Post } from '../lib/db';
+import { getSupabase } from '../lib/supabase';
 import { Tag as TagIcon, ArrowLeft } from 'lucide-react';
 
 const TagPage = () => {
@@ -12,14 +13,15 @@ const TagPage = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch('/api/posts');
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          const filtered = data.filter((p: Post) => p.tags && Array.isArray(p.tags) && p.tags.includes(tag || ''));
-          setPosts(filtered);
-        } else {
-          setPosts([]);
-        }
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .contains('tags', [tag])
+          .order('createdAt', { ascending: false });
+        
+        if (error) throw error;
+        setPosts(data || []);
       } catch (err) {
         console.error('Failed to fetch posts:', err);
       } finally {

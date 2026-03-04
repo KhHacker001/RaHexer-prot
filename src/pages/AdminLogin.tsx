@@ -1,9 +1,10 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Shield, Terminal as TerminalIcon, AlertTriangle } from 'lucide-react';
+import { getSupabase } from '../lib/supabase';
 
 const AdminLogin = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,21 +16,16 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+      const supabase = getSupabase();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        navigate('/admin/dashboard');
-      } else {
-        setError(data.error || 'Access Denied');
-      }
-    } catch (err) {
-      setError('Connection Error');
+      if (authError) throw authError;
+      navigate('/admin/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Access Denied');
     } finally {
       setLoading(false);
     }
@@ -56,15 +52,15 @@ const AdminLogin = () => {
 
           <form onSubmit={handleLogin} className="space-y-8">
             <div className="space-y-3">
-              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-4">Identifier</label>
+              <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-4">Email Address</label>
               <div className="relative">
                 <TerminalIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-black/40 border border-white/5 rounded-2xl py-4 pl-14 pr-6 text-white focus:border-white/20 outline-none transition-all font-medium"
-                  placeholder="admin_id"
+                  placeholder="admin@rahexer.com"
                   required
                 />
               </div>
