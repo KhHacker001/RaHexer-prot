@@ -1,4 +1,5 @@
-import { BarChart as BarChartIcon, Users, FileText, Eye, Globe, Smartphone, Monitor, TrendingUp, Award } from 'lucide-react';
+import React, { useState } from 'react';
+import { BarChart as BarChartIcon, Users, FileText, Eye, Globe, Smartphone, Monitor, TrendingUp, Award, ChevronDown, ChevronUp } from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -27,6 +28,7 @@ interface AnalyticsProps {
 }
 
 const Analytics = ({ data }: AnalyticsProps) => {
+  const [showAllVisitors, setShowAllVisitors] = useState(false);
   const stats = [
     { label: 'Total Reports', value: data.totalPosts, icon: FileText, color: 'text-blue-500' },
     { label: 'Total Views', value: data.totalViews, icon: Eye, color: 'text-emerald-500' },
@@ -179,7 +181,7 @@ const Analytics = ({ data }: AnalyticsProps) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.02]">
-                {data.recentVisitors.map((v) => (
+                {(showAllVisitors ? data.recentVisitors : data.recentVisitors.slice(0, 4)).map((v) => (
                   <tr key={v.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-10 py-6 font-mono text-emerald-500/70">{v.ip.replace(/\.\d+$/, '.***')}</td>
                     <td className="px-10 py-6 font-bold text-zinc-400">{v.country}</td>
@@ -193,6 +195,26 @@ const Analytics = ({ data }: AnalyticsProps) => {
               </tbody>
             </table>
           </div>
+          {data.recentVisitors.length > 4 && (
+            <div className="px-10 py-6 border-t border-white/5">
+              <button
+                onClick={() => setShowAllVisitors(!showAllVisitors)}
+                className="flex items-center gap-2 text-[10px] font-bold text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors"
+              >
+                {showAllVisitors ? (
+                  <>
+                    <ChevronUp className="w-3 h-3" />
+                    Show Less
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-3 h-3" />
+                    See More ({data.recentVisitors.length - 4} more)
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-10 space-y-10">

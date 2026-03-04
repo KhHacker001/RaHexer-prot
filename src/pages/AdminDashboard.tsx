@@ -70,7 +70,7 @@ const AdminDashboard = () => {
           topPosts,
           visitorTrend,
           deviceStats,
-          recentVisitors: visitorsData?.slice(-20).reverse() || []
+          recentVisitors: [...(visitorsData || [])].reverse()
         });
 
       } catch (err) {

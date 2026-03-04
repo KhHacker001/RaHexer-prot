@@ -40,24 +40,17 @@ const Header = () => {
     <>
       <header 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          scrolled ? 'py-4' : 'py-8'
+          scrolled ? 'py-2' : 'py-4'
         }`}
       >
         <div className="container mx-auto px-6">
-          <div className={`relative flex justify-between items-center px-8 py-4 rounded-full border transition-all duration-500 ${
+          <div className={`relative flex justify-between items-center px-8 py-2 rounded-full border transition-all duration-500 ${
             scrolled 
               ? 'bg-black/60 backdrop-blur-xl border-white/10 shadow-2xl' 
               : 'bg-transparent border-transparent'
           }`}>
             <div className="flex items-center gap-6">
-              <button 
-                onClick={() => setIsSidebarOpen(true)}
-                className="p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-400 hover:text-white"
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-              
-              <Link to="/" className="flex items-center gap-3 group">
+              <Link to="/" className="flex items-center gap-3 group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
                   <div className="w-3 h-3 bg-black rounded-sm"></div>
                 </div>
@@ -72,7 +65,14 @@ const Header = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  onClick={(e) => handleLinkClick(e, link.path)}
+                  onClick={(e) => {
+                    if (link.name === 'Home') {
+                      e.preventDefault();
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } else {
+                      handleLinkClick(e, link.path);
+                    }
+                  }}
                   className="text-[13px] font-medium text-zinc-400 hover:text-white transition-colors"
                 >
                   {link.name}
@@ -86,7 +86,22 @@ const Header = () => {
                 Get Access
                 <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Link>
+              
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-400 hover:text-white ml-4"
+              >
+                <Menu className="w-6 h-6" />
+              </button>
             </nav>
+
+            {/* Mobile Menu Toggle (Always on right) */}
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="md:hidden p-2 hover:bg-white/5 rounded-full transition-colors text-zinc-400 hover:text-white"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
           </div>
         </div>
       </header>
