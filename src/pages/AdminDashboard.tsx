@@ -15,7 +15,24 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         const supabase = getSupabase();
-        const { data: { session } } = await supabase.auth.getSession();
+        
+        // Try to get session, but catch potential refresh token errors
+        let session = null;
+        try {
+          const { data, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError) {
+            console.error('Auth session error:', sessionError);
+            // If it's a refresh token error, we must sign out to clear local storage
+            await supabase.auth.signOut();
+            return navigate('/admin');
+          }
+          session = data.session;
+        } catch (e) {
+          console.error('Unexpected auth error:', e);
+          await supabase.auth.signOut();
+          return navigate('/admin');
+        }
+
         if (!session) return navigate('/admin');
 
         const { data: postsData, error: postsError } = await supabase
@@ -126,7 +143,7 @@ const AdminDashboard = () => {
             <LayoutDashboard className="w-4 h-4" />
             Control
           </div>
-          <h1 className="text-6xl font-bold tracking-tight text-white uppercase">Command Center</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-white uppercase">Command Center</h1>
           <p className="text-zinc-500 font-medium uppercase tracking-widest text-xs">System Administrator Dashboard</p>
         </div>
         <div className="flex flex-wrap gap-4">

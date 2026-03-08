@@ -132,7 +132,7 @@ const PostDetail = () => {
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[0.95] text-white">
+            <h1 className="text-3xl md:text-5xl font-bold tracking-tight leading-[0.95] text-white">
               {post.title}
             </h1>
 

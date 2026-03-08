@@ -45,7 +45,7 @@ const TagPage = () => {
               <TagIcon className="w-4 h-4" />
               Classification
             </div>
-            <h1 className="text-6xl font-bold tracking-tight text-white uppercase">{tag}</h1>
+            <h1 className="text-4xl font-bold tracking-tight text-white uppercase">{tag}</h1>
           </div>
           <p className="text-zinc-500 text-sm font-medium uppercase tracking-widest">
             {posts.length} Intelligence Reports Found

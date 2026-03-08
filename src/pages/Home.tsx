@@ -40,7 +40,7 @@ const Home = () => {
             </div>
             <div className="h-[1px] w-12 bg-white/10"></div>
           </div>
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-12 leading-[0.95]">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-12 leading-[0.95]">
             Securing the <br />
             <span className="text-zinc-500">Digital Frontier.</span>
           </h1>

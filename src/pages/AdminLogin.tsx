@@ -17,6 +17,10 @@ const AdminLogin = () => {
 
     try {
       const supabase = getSupabase();
+      
+      // Clear any existing broken session first
+      await supabase.auth.signOut();
+
       const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,

@@ -14,6 +14,15 @@ import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   useEffect(() => {
+    const supabase = getSupabase();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        // Handle global auth state changes if needed
+      }
+    });
+
     const trackVisitor = async () => {
       try {
         const supabase = getSupabase();
@@ -54,6 +63,10 @@ function App() {
       }
     };
     trackVisitor();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   return (

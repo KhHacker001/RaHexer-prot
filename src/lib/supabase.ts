@@ -10,7 +10,13 @@ export const getSupabase = (): SupabaseClient => {
     if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error('Supabase credentials missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment.');
     }
-    supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+    supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
   }
   return supabaseClient;
 };
